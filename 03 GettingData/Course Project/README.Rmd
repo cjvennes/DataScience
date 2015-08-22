@@ -1,0 +1,126 @@
+# GettingData-README
+#### _Chris Vennes_
+#### _August 22, 2015_
+
+
+This ReadMe contains on executing and creation of run_analysis.R.  
+
+### Running run_analysis.R:
+Run this file in the same directory as the output of the zip file below.  It should unzip to a file called UCI HAR Dataset; the script should be run in the same working directory as that folder, not inside the folder.
+  [Dataset](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip )
+
+Please note that the analysis script requires dplyr packages to be installed, if you do not have dplyr then instal it:
+
+```{r eval=FALSE}
+  install.packages("dplyr")
+```
+
+The output of the script will be a table containing Tidy Data as docuemnted by the [CodeBook](https://github.com/cjvennes/DataScience/blob/master/03%20GettingData/Course%20Project/CodeBook.Rmd) in this repository.
+
+### Creation and Walkthrough of run_analysis.R:
+
+See the full script [here](https://github.com/cjvennes/DataScience/blob/master/03%20GettingData/Course%20Project/run_analysis.R) with limited notes embedded.
+
+The function requires no inputs but does require you to run in the same working folder as the UCI HAR Dataset (see above).
+
+The main objectives our of analysis as specified by the course project are:
+    1. Merges the training and the test sets to create one data set.
+    2. Extracts only the measurements on the mean and standard deviation for each measurement. 
+    3. Uses descriptive activity names to name the activities in the data set
+    4. Appropriately labels the data set with descriptive variable names. 
+    5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+**_STEP 1 _**
+
+_1. Load the data and merge training and test sets to create one data set._ 
+First we need to load all applicable datasets we want to use:
+
+```{r eval=FALSE}
+    activityLabels <- read.table("./UCI HAR Dataset/activity_labels.txt")
+    features <- read.table("./UCI HAR Dataset/features.txt")
+    subjectTest <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+    subjectTrain <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+    Xtest <- read.table("./UCI HAR Dataset/test/X_test.txt")
+    Xtrain <- read.table("./UCI HAR Dataset/train/X_train.txt")
+    labelTest <- read.table("./UCI HAR Dataset/test/y_test.txt")
+    labelTrain <- read.table("./UCI HAR Dataset/train/y_train.txt")
+```
+
+For ease of use and save us a more complicate step later we will add headers to the Test and Training tables from the features.txt data:
+
+```{r eval=FALSE}
+  names(Xtest) <- features[,2]
+  names(Xtrain) <- features[,2]
+```
+
+Now we will combine the two datasets into a single table called Xdata
+
+```{r eval=FALSE}
+  Xdata <- rbind(Xtest,Xtrain)
+```
+
+**_STEP 2 _**
+
+_2. Extract only the variables with mean or standard deviation._
+
+Use grep with the following patter to search for mean and std:
+```{r eval=FALSE}
+  pattern <- c("-mean()","-std()")
+  data <- Xdata[,grep(paste(pattern,collapse="|"), names(Xdata))]
+```
+
+There is another meanFreq column that we do not want, but isn't removed with the above script.  So remove that one too
+```{r eval=FALSE}
+  Xdata <- Xdata[,grep("meanFreq", names(Xdata), invert=TRUE)]
+```
+    
+**_STEP 3_**
+
+_3. Uses descriptive activity names to name the activities in the data set_
+
+Combine the subject tables that we will use to merge to Xdata above
+```{r eval=FALSE}
+    subjectTest$Set <- "Test"  #This will be used once we merge the two sets to differeniate
+    subjectTrain$Set <- "Training" #This will be used once we merge the two sets to differeniate
+    subjectX <- rbind(subjectTest, subjectTrain)
+    names(subjectX) <- c("Subject","Set")
+```
+
+Combine the activity labels that we will use to merge to Xdata above.
+```{r eval=FALSE}
+    names(activityLabels) <- c("Activity.Code","Activity.Name")
+    labelX <- rbind(labelTest, labelTrain)
+    names(labelX) <- "Activity.Code"
+    labelX <- merge(labelX, activityLabels, by="Activity.Code")
+```
+Add the Activity and Subject to the main data table, this will apply descriptive labels to the dataset.  Name the output data.
+
+```{r eval=FALSE}
+    data <- cbind(labelX, Xdata)
+    data <- cbind(subjectX, data)
+```  
+With this step done we actually have completed objective 4:
+
+_4. Appropriately labels the data set with descriptive variable names._
+
+**_STEP 4_**
+
+_5. From the data set in step 4, create a second, independent tidy data set with the average of each variable for each activity and each subject._
+
+We are going to use the dplyr library to summarize the data.  Please make sure dplyr is installed, the script will load the package if not done so already.
+    
+create a group by table using the Subject, and Activity Name.  This will allow dpylr to aggregate based on those two variables.
+```{r eval=FALSE}
+    Group.data <- group_by(data, Subject, Activity.Name)
+```  
+
+Summarize data by Subject and Activity.Name, taking the mean of each variable.  Columns 5 through 70 are all variable columns we want to take the mean of.
+```{r eval=FALSE}
+    Avg.data <- summarise_each(Group.data, funs(mean),5:70)
+```      
+
+Finally return this tidy data set for usage in further analysis.
+```{r eval=FALSE}
+    return(Avg.data)
+```
+}

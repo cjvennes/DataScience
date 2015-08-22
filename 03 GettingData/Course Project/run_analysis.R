@@ -1,3 +1,4 @@
+run_analysis <- function () {
 ##Analysis Objectives:
     #1. Merges the training and the test sets to create one data set.
     #2. Extracts only the measurements on the mean and standard deviation for each measurement. 
@@ -65,5 +66,5 @@
     
     #summarize data by Subject and Activity.Name, taking the mean of each variable
     Avg.data <- summarise_each(Group.data, funs(mean),5:70) #where 5:70 are all variable columns
-    
-    
+    return(Avg.data)
+}

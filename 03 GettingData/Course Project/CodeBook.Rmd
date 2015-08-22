@@ -1,9 +1,7 @@
----
-title: "GettingData-Codebook"
-author: "Chris Vennes"
-date: "August 22, 2015"
-output: html_document
----
+# GettingData-Codebook
+#### _Chris Vennes_
+#### _August 22, 2015_
+
 
 This codebook contains details on variables found in my TidyData output of run_analysis.R.  
 
