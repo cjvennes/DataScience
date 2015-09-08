@@ -1,9 +1,6 @@
----
-title: "Exploratory Data Analysis - Course Project 1"
-author: "Chris Vennes"
-date: "September 7, 2015"
-output: html_document
----
+# Exploratory Data Analysis - Course Project 1
+#### _Chris Vennes_
+#### _August 22, 2015_
 
 ##Project Objectives
 Get familar with R base ploting functionality by examining household energy usage over a 2 day period using data from the [UC Irvine Machine Learning Repository](http://archive.ics.uci.edu/ml/) using the "Individual household electric power consumption Data Set".  For descriptions of the data [see here](https://archive.ics.uci.edu/ml/datasets/Individual+household+electric+power+consumption).
